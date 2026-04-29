@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>발언 비교 — 팩트로그</title>
+</head>
+<body>
+<main class="page">
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon" style="background:var(--red-50);color:var(--red-500);">🗣</span>
+            발언 비교 아카이브
+        </h1>
+        <a th:href="@{/flipflop/create}" class="btn btn-danger btn-sm" sec:authorize="hasRole('ADMIN')">
+            <i class="bi bi-plus-lg"></i> 등록
+        </a>
+    </div>
+
+    <div class="notice">
+        <i class="bi bi-shield-check" style="flex-shrink:0;font-size:15px;margin-top:2px;"></i>
+        <span>모든 발언은 공식 언론사 뉴스 기사를 출처로 하며, 운영진이 직접 검증 후 등록합니다. 정치적 편향 없이 사실만을 기록합니다.</span>
+    </div>
+
+    <form th:action="@{/flipflop}" method="get" class="search-bar">
+        <input type="text" name="keyword" th:value="${keyword}" placeholder="정치인 이름 또는 제목으로 검색...">
+        <button type="submit"><i class="bi bi-search"></i> 검색</button>
+    </form>
+
+    <div th:if="${flipFlopPage.isEmpty()}" class="card">
+        <div class="empty">
+            <div class="empty-icon">🔍</div>
+            <h4 th:text="${#strings.isEmpty(keyword)} ? '등록된 발언 기록이 없습니다' : '검색 결과가 없습니다'"></h4>
+            <p th:text="${#strings.isEmpty(keyword)} ? '운영진이 검증된 발언을 곧 등록할 예정입니다.' : '다른 검색어를 시도해보세요.'"></p>
+        </div>
+    </div>
+
+    <div th:each="ff : ${flipFlopPage.content}" class="ff-card"
+         th:onclick="|location.href='@{/flipflop/{id}(id=${ff.id})}'|"
+         style="cursor:pointer;">
+        <div class="ff-card-top">
+            <span class="badge badge-politician">
+                <i class="bi bi-person-fill"></i>
+                <span th:text="${ff.politicianName}"></span>
+            </span>
+            <a th:href="@{/flipflop/{id}(id=${ff.id})}" class="ff-card-title"
+               th:text="${ff.title}"></a>
+            <div class="ff-card-meta">
+                <span><i class="bi bi-chat"></i> <span th:text="${#lists.size(ff.comments)}"></span></span>
+                <span><i class="bi bi-eye"></i> <span th:text="${ff.viewCount}"></span></span>
+                <span th:text="${#temporals.format(ff.createdAt, 'yyyy.MM.dd')}"></span>
+            </div>
+        </div>
+        <div class="ff-compare">
+            <div class="ff-col ff-col-before">
+                <div class="ff-col-label before"><i class="bi bi-clock-history"></i> 이전 발언</div>
+                <div class="ff-col-date" th:text="${#temporals.format(ff.beforeDate, 'yyyy년 MM월 dd일')}"></div>
+                <div class="ff-col-text" th:text="${#strings.abbreviate(ff.beforeStatement, 120)}"></div>
+            </div>
+            <div class="ff-col-arrow">
+                <div class="ff-arrow-circle"><i class="bi bi-arrow-right"></i></div>
+            </div>
+            <div class="ff-col ff-col-after">
+                <div class="ff-col-label after"><i class="bi bi-mic-fill"></i> 현재 발언</div>
+                <div class="ff-col-date" th:text="${#temporals.format(ff.afterDate, 'yyyy년 MM월 dd일')}"></div>
+                <div class="ff-col-text" th:text="${#strings.abbreviate(ff.afterStatement, 120)}"></div>
+            </div>
+        </div>
+    </div>
+
+    <nav th:if="${flipFlopPage.totalPages > 1}" class="pagination">
+        <a class="page-btn" th:classappend="${currentPage == 0} ? 'is-disabled'"
+           th:href="@{/flipflop(page=${currentPage - 1}, keyword=${keyword})}">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        <a th:each="i : ${#numbers.sequence(0, flipFlopPage.totalPages - 1)}"
+           class="page-btn" th:classappend="${i == currentPage} ? 'is-active'"
+           th:href="@{/flipflop(page=${i}, keyword=${keyword})}"
+           th:text="${i + 1}"></a>
+        <a class="page-btn" th:classappend="${currentPage == flipFlopPage.totalPages - 1} ? 'is-disabled'"
+           th:href="@{/flipflop(page=${currentPage + 1}, keyword=${keyword})}">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    </nav>
+
+</main>
+</body>
+</html>

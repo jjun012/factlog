@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>글쓰기 — 팩트로그</title>
+</head>
+<body>
+<main class="page-narrow">
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon" style="background:var(--blue-50);color:var(--color-primary);">✏️</span>
+            <span th:text="${postId != null} ? '게시글 수정' : '글쓰기'"></span>
+        </h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form th:action="${postId != null} ? @{/post/{id}/edit(id=${postId})} : @{/post/create}"
+                  method="post" th:object="${postForm}">
+
+                <div class="field">
+                    <label class="label label-required">제목</label>
+                    <input class="input" th:classappend="${#fields.hasErrors('title')} ? 'is-error'"
+                           type="text" th:field="*{title}" placeholder="제목을 입력하세요"
+                           style="font-size:1rem;font-weight:600;">
+                    <div class="field-error" th:if="${#fields.hasErrors('title')}">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <span th:errors="*{title}"></span>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-bottom:1.5rem;">
+                    <label class="label label-required">내용</label>
+                    <textarea class="textarea" th:classappend="${#fields.hasErrors('content')} ? 'is-error'"
+                              th:field="*{content}" rows="16"
+                              placeholder="내용을 입력하세요..."></textarea>
+                    <div class="field-error" th:if="${#fields.hasErrors('content')}">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <span th:errors="*{content}"></span>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;padding-top:1rem;border-top:1px solid var(--color-border);">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i>
+                        <span th:text="${postId != null} ? '수정 완료' : '등록하기'"></span>
+                    </button>
+                    <a th:href="@{/post}" class="btn btn-outline">취소</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

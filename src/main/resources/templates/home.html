@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>팩트로그 — 정치 발언 기록소</title>
+</head>
+<body>
+<main class="page">
+
+    <!-- 히어로 -->
+    <div class="hero">
+        <div class="hero-inner">
+            <div class="hero-eyebrow">
+                <i class="bi bi-shield-check"></i>
+                공식 언론 보도 기반 &nbsp;·&nbsp; 정치적 중립
+            </div>
+            <h1>정치인의 발언,<br>기록으로 남깁니다.</h1>
+            <p>이전 발언과 현재 발언을 공식 뉴스 출처와 함께 비교합니다.</p>
+            <div class="hero-btns">
+                <a th:href="@{/flipflop}" class="hero-btn-white">
+                    <i class="bi bi-arrow-left-right"></i> 발언 비교 보기
+                </a>
+                <a th:href="@{/post}" class="hero-btn-glass">
+                    <i class="bi bi-people"></i> 커뮤니티
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 본문 2단 -->
+    <div class="two-col">
+
+        <!-- 왼쪽: 최신 발언 비교 -->
+        <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="width:4px;height:18px;background:var(--red-500);border-radius:2px;display:inline-block;"></span>
+                    <span style="font-size:0.9rem;font-weight:800;color:var(--slate-800);">최신 발언 비교</span>
+                </div>
+                <a th:href="@{/flipflop}" style="font-size:0.78rem;color:var(--color-primary);font-weight:600;">
+                    전체보기 <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(recentFlipFlops)}" class="ff-card">
+                <div class="empty">
+                    <div class="empty-icon">📋</div>
+                    <h4>등록된 발언 기록이 없습니다</h4>
+                    <p>운영진이 검증한 발언이 등록되면 표시됩니다.</p>
+                </div>
+            </div>
+
+            <div th:each="ff : ${recentFlipFlops}" class="ff-card">
+                <div class="ff-card-top">
+                    <span class="badge badge-politician">
+                        <i class="bi bi-person-fill"></i>
+                        <span th:text="${ff.politicianName}"></span>
+                    </span>
+                    <a th:href="@{/flipflop/{id}(id=${ff.id})}" class="ff-card-title"
+                       th:text="${ff.title}"></a>
+                    <div class="ff-card-meta">
+                        <span><i class="bi bi-chat"></i> <span th:text="${#lists.size(ff.comments)}"></span></span>
+                        <span th:text="${#temporals.format(ff.createdAt, 'MM.dd')}"></span>
+                    </div>
+                </div>
+                <div class="ff-compare">
+                    <div class="ff-col ff-col-before">
+                        <div class="ff-col-label before"><i class="bi bi-clock-history"></i> 이전 발언</div>
+                        <div class="ff-col-date" th:text="${#temporals.format(ff.beforeDate, 'yyyy.MM.dd')}"></div>
+                        <div class="ff-col-text" th:text="${#strings.abbreviate(ff.beforeStatement, 90)}"></div>
+                    </div>
+                    <div class="ff-col-arrow">
+                        <div class="ff-arrow-circle"><i class="bi bi-arrow-right"></i></div>
+                    </div>
+                    <div class="ff-col ff-col-after">
+                        <div class="ff-col-label after"><i class="bi bi-mic-fill"></i> 현재 발언</div>
+                        <div class="ff-col-date" th:text="${#temporals.format(ff.afterDate, 'yyyy.MM.dd')}"></div>
+                        <div class="ff-col-text" th:text="${#strings.abbreviate(ff.afterStatement, 90)}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 오른쪽 사이드바 -->
+        <div>
+            <!-- 핫게시판 -->
+            <div class="sidebar-card">
+                <div class="sidebar-head">
+                    <div class="sidebar-title">
+                        <i class="bi bi-fire" style="color:var(--red-500);"></i> 핫게시판
+                    </div>
+                    <a th:href="@{/post/hot}" class="sidebar-more">전체보기</a>
+                </div>
+                <div th:if="${#lists.isEmpty(hotPosts)}" class="sidebar-empty">
+                    아직 핫게시판 글이 없어요<br>
+                    <span style="font-size:0.76rem;">좋아요 10개 이상이면 자동 등록됩니다</span>
+                </div>
+                <a th:each="p, stat : ${hotPosts}" th:href="@{/post/{id}(id=${p.id})}" class="sidebar-item">
+                    <span class="rank-num" th:classappend="${stat.index < 3} ? 'top' : 'normal'"
+                          th:text="${stat.index + 1}"></span>
+                    <span class="sidebar-item-text" th:text="${p.title}"></span>
+                    <span class="sidebar-likes">
+                        <i class="bi bi-heart-fill"></i>
+                        <span th:text="${p.likeCount}"></span>
+                    </span>
+                </a>
+            </div>
+
+            <!-- 최근 게시글 -->
+            <div class="sidebar-card">
+                <div class="sidebar-head">
+                    <div class="sidebar-title">
+                        <i class="bi bi-chat-square-text" style="color:var(--color-primary);"></i> 최근 게시글
+                    </div>
+                    <a th:href="@{/post}" class="sidebar-more">전체보기</a>
+                </div>
+                <div th:if="${#lists.isEmpty(recentPosts)}" class="sidebar-empty">
+                    아직 게시글이 없습니다
+                </div>
+                <a th:each="p : ${recentPosts}" th:href="@{/post/{id}(id=${p.id})}" class="sidebar-item">
+                    <span class="sidebar-item-text" th:text="${p.title}"></span>
+                    <span style="font-size:0.76rem;color:var(--slate-400);flex-shrink:0;"
+                          th:text="${p.author.nickname}"></span>
+                </a>
+            </div>
+
+            <!-- 이용 안내 -->
+            <div class="info-box">
+                <div class="info-box-title">
+                    <i class="bi bi-info-circle-fill"></i> 이용 안내
+                </div>
+                <ul>
+                    <li>발언 기록은 운영진이 검증 후 등록합니다</li>
+                    <li>모든 발언엔 공식 언론사 출처가 포함됩니다</li>
+                    <li>글·댓글 작성은 회원가입 후 가능합니다</li>
+                    <li>좋아요 10개 이상 글은 핫게시판에 등록됩니다</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>

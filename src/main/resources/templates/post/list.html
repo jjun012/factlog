@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>커뮤니티 — 팩트로그</title>
+</head>
+<body>
+<main class="page-narrow">
+
+    <div th:if="${successMessage}" class="alert alert-success">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon" style="background:var(--blue-50);color:var(--color-primary);">💬</span>
+            커뮤니티
+        </h1>
+        <a th:href="@{/post/create}" class="btn btn-primary btn-sm" sec:authorize="isAuthenticated()">
+            <i class="bi bi-pencil-square"></i> 글쓰기
+        </a>
+        <a th:href="@{/member/login}" class="btn btn-primary btn-sm" sec:authorize="!isAuthenticated()">
+            <i class="bi bi-pencil-square"></i> 글쓰기
+        </a>
+    </div>
+
+    <form th:action="@{/post}" method="get" class="search-bar">
+        <input type="text" name="keyword" th:value="${keyword}" placeholder="제목 또는 내용으로 검색...">
+        <button type="submit"><i class="bi bi-search"></i> 검색</button>
+    </form>
+
+    <div class="post-list">
+        <div th:if="${postPage.isEmpty()}" class="empty">
+            <div class="empty-icon">✍️</div>
+            <h4 th:text="${#strings.isEmpty(keyword)} ? '아직 게시글이 없습니다' : '검색 결과가 없습니다'"></h4>
+            <p th:text="${#strings.isEmpty(keyword)} ? '첫 번째 글을 작성해보세요!' : '다른 검색어를 시도해보세요.'"></p>
+        </div>
+
+        <a th:each="post : ${postPage.content}"
+           th:href="@{/post/{id}(id=${post.id})}"
+           class="post-row">
+            <div class="post-row-main">
+                <div class="post-row-title">
+                    <span class="badge badge-hot" th:if="${post.hot}">
+                        <i class="bi bi-fire"></i> HOT
+                    </span>
+                    <span class="post-row-title-text" th:text="${post.title}"></span>
+                    <span class="post-row-comment-count" th:if="${post.comments.size() > 0}"
+                          th:text="'[' + ${post.comments.size()} + ']'"></span>
+                </div>
+                <div class="post-row-meta">
+                    <span><i class="bi bi-person"></i> <span th:text="${post.author.nickname}"></span></span>
+                    <span th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd')}"></span>
+                </div>
+            </div>
+            <div class="post-row-stats">
+                <span class="post-row-stat">
+                    <i class="bi bi-eye"></i> <span th:text="${post.viewCount}"></span>
+                </span>
+                <span class="post-row-stat likes">
+                    <i class="bi bi-heart-fill"></i> <span th:text="${post.likeCount}"></span>
+                </span>
+            </div>
+        </a>
+    </div>
+
+    <nav th:if="${postPage.totalPages > 1}" class="pagination">
+        <a class="page-btn" th:classappend="${currentPage == 0} ? 'is-disabled'"
+           th:href="@{/post(page=${currentPage - 1}, keyword=${keyword})}">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        <a th:each="i : ${#numbers.sequence(0, postPage.totalPages - 1)}"
+           class="page-btn" th:classappend="${i == currentPage} ? 'is-active'"
+           th:href="@{/post(page=${i}, keyword=${keyword})}"
+           th:text="${i + 1}"></a>
+        <a class="page-btn" th:classappend="${currentPage == postPage.totalPages - 1} ? 'is-disabled'"
+           th:href="@{/post(page=${currentPage + 1}, keyword=${keyword})}">
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    </nav>
+
+</main>
+</body>
+</html>

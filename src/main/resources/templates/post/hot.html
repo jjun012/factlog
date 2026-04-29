@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>핫게시판 — 팩트로그</title>
+</head>
+<body>
+<main class="page-narrow">
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon" style="background:var(--red-50);color:var(--red-500);">🔥</span>
+            핫게시판
+        </h1>
+        <span class="meta-pill">
+            <i class="bi bi-heart-fill" style="color:var(--red-500);"></i>
+            좋아요 10개 이상 자동 등록
+        </span>
+    </div>
+
+    <div class="post-list">
+        <div th:if="${#lists.isEmpty(hotPosts)}" class="empty">
+            <div class="empty-icon">🔥</div>
+            <h4>아직 핫게시판 게시글이 없어요</h4>
+            <p>좋아요를 10개 이상 받으면 자동으로 이곳에 등록됩니다!</p>
+            <a th:href="@{/post}" class="btn btn-primary btn-sm" style="margin-top:1rem;">
+                커뮤니티 바로가기
+            </a>
+        </div>
+
+        <a th:each="post, stat : ${hotPosts}"
+           th:href="@{/post/{id}(id=${post.id})}"
+           class="post-row" style="padding:16px 1.25rem;">
+            <span class="rank-num" th:classappend="${stat.index < 3} ? 'top' : 'normal'"
+                  th:text="${stat.index + 1}"></span>
+            <div class="post-row-main">
+                <div class="post-row-title">
+                    <span class="post-row-title-text" th:text="${post.title}"></span>
+                    <span class="post-row-comment-count" th:if="${post.comments.size() > 0}"
+                          th:text="'[' + ${post.comments.size()} + ']'"></span>
+                </div>
+                <div class="post-row-meta">
+                    <span><i class="bi bi-person"></i> <span th:text="${post.author.nickname}"></span></span>
+                    <span th:text="${#temporals.format(post.createdAt, 'yyyy.MM.dd')}"></span>
+                    <span><i class="bi bi-eye"></i> <span th:text="${post.viewCount}"></span></span>
+                </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+                <div style="font-size:1.3rem;font-weight:900;color:var(--red-500);" th:text="${post.likeCount}"></div>
+                <div style="font-size:0.72rem;color:var(--slate-400);">좋아요</div>
+            </div>
+        </a>
+    </div>
+
+    <a th:href="@{/post}" class="btn btn-outline" style="margin-top:1rem;">
+        <i class="bi bi-arrow-left"></i> 커뮤니티로
+    </a>
+
+</main>
+</body>
+</html>

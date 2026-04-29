@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>발언 기록 등록 — 팩트로그</title>
+</head>
+<body>
+<main class="page-narrow">
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon" style="background:var(--red-50);color:var(--red-500);">📝</span>
+            <span th:text="${flipFlopId != null} ? '발언 기록 수정' : '새 발언 기록 등록'"></span>
+        </h1>
+    </div>
+
+    <div class="alert alert-warning" style="margin-bottom:1.5rem;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>발언 출처는 반드시 <strong>공식 언론사 뉴스 기사 URL</strong>이어야 합니다. 개인 블로그·SNS·유튜브는 등록 불가합니다.</span>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form th:action="${flipFlopId != null} ? @{/flipflop/{id}/edit(id=${flipFlopId})} : @{/flipflop/create}"
+                  method="post" th:object="${flipFlopForm}">
+
+                <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;" class="field">
+                    <div>
+                        <label class="label label-required">정치인 이름</label>
+                        <input class="input" th:classappend="${#fields.hasErrors('politicianName')} ? 'is-error'"
+                               type="text" th:field="*{politicianName}" placeholder="예: 홍길동">
+                        <div class="field-error" th:if="${#fields.hasErrors('politicianName')}">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <span th:errors="*{politicianName}"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label label-required">제목</label>
+                        <input class="input" th:classappend="${#fields.hasErrors('title')} ? 'is-error'"
+                               type="text" th:field="*{title}" placeholder="예: 최저임금 관련 발언 변화">
+                        <div class="field-error" th:if="${#fields.hasErrors('title')}">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <span th:errors="*{title}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:0.5rem;">
+
+                    <!-- 이전 발언 -->
+                    <div style="background:var(--slate-50);border-radius:var(--r-lg);padding:1.25rem;">
+                        <div style="font-size:0.82rem;font-weight:800;color:var(--slate-600);
+                                    border-bottom:2px solid var(--slate-200);padding-bottom:8px;
+                                    margin-bottom:1rem;display:flex;align-items:center;gap:6px;">
+                            <i class="bi bi-clock-history"></i> 이전 발언
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">발언 날짜</label>
+                            <input class="input" type="datetime-local" th:field="*{beforeDate}"
+                                   th:classappend="${#fields.hasErrors('beforeDate')} ? 'is-error'">
+                            <div class="field-error" th:if="${#fields.hasErrors('beforeDate')}">
+                                <span th:errors="*{beforeDate}"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">발언 내용</label>
+                            <textarea class="textarea" th:field="*{beforeStatement}" rows="5"
+                                      th:classappend="${#fields.hasErrors('beforeStatement')} ? 'is-error'"
+                                      placeholder="이전 발언 내용을 그대로 입력하세요"></textarea>
+                            <div class="field-error" th:if="${#fields.hasErrors('beforeStatement')}">
+                                <span th:errors="*{beforeStatement}"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">뉴스 출처 URL</label>
+                            <input class="input" type="url" th:field="*{beforeSource}"
+                                   th:classappend="${#fields.hasErrors('beforeSource')} ? 'is-error'"
+                                   placeholder="https://news.example.com/...">
+                            <div class="field-error" th:if="${#fields.hasErrors('beforeSource')}">
+                                <span th:errors="*{beforeSource}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 현재 발언 -->
+                    <div style="background:#fffdf0;border-radius:var(--r-lg);padding:1.25rem;">
+                        <div style="font-size:0.82rem;font-weight:800;color:var(--amber-500);
+                                    border-bottom:2px solid var(--amber-200);padding-bottom:8px;
+                                    margin-bottom:1rem;display:flex;align-items:center;gap:6px;">
+                            <i class="bi bi-mic-fill"></i> 현재 발언
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">발언 날짜</label>
+                            <input class="input" type="datetime-local" th:field="*{afterDate}"
+                                   th:classappend="${#fields.hasErrors('afterDate')} ? 'is-error'">
+                            <div class="field-error" th:if="${#fields.hasErrors('afterDate')}">
+                                <span th:errors="*{afterDate}"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">발언 내용</label>
+                            <textarea class="textarea" th:field="*{afterStatement}" rows="5"
+                                      th:classappend="${#fields.hasErrors('afterStatement')} ? 'is-error'"
+                                      placeholder="현재 발언 내용을 그대로 입력하세요"></textarea>
+                            <div class="field-error" th:if="${#fields.hasErrors('afterStatement')}">
+                                <span th:errors="*{afterStatement}"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">뉴스 출처 URL</label>
+                            <input class="input" type="url" th:field="*{afterSource}"
+                                   th:classappend="${#fields.hasErrors('afterSource')} ? 'is-error'"
+                                   placeholder="https://news.example.com/...">
+                            <div class="field-error" th:if="${#fields.hasErrors('afterSource')}">
+                                <span th:errors="*{afterSource}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="display:flex;gap:10px;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--color-border);">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-check-circle"></i> 저장하기
+                    </button>
+                    <a th:href="@{/flipflop}" class="btn btn-outline">취소</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
