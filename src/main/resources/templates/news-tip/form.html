@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>뉴스 제보 — 팩트로그</title>
+</head>
+<body>
+<main class="page-narrow">
+
+    <div class="page-header">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+            <h1 class="page-title">
+                <span class="title-icon" style="background:#fef9c3;color:#ca8a04;">📰</span>
+                뉴스 제보
+            </h1>
+            <a th:href="@{/news-tip/my}" class="btn btn-outline btn-sm">
+                <i class="bi bi-clock-history"></i> 내 제보 내역
+            </a>
+        </div>
+        <p style="color:var(--slate-500);font-size:0.88rem;margin-top:0.5rem;line-height:1.6;">
+            정치인의 말 바꾸기 사례를 발견하셨나요? 뉴스 링크와 함께 제보해 주세요.
+            관리자가 검토 후 팩트로그에 등록합니다.
+        </p>
+    </div>
+
+    <!-- 제보 방법 안내 -->
+    <div class="card" style="margin-bottom:1.25rem;background:#f0f9ff;border:1px solid #bae6fd;">
+        <div class="card-body" style="padding:14px 18px;">
+            <p style="font-size:0.82rem;font-weight:700;color:#0369a1;margin-bottom:6px;">
+                <i class="bi bi-lightbulb-fill"></i> 좋은 제보란?
+            </p>
+            <ul style="font-size:0.82rem;color:#0c4a6e;margin:0;padding-left:1.2rem;line-height:1.8;">
+                <li>과거 발언과 현재 발언이 명백히 다른 경우</li>
+                <li>공식 언론 기사 링크가 있는 경우</li>
+                <li>어떤 발언이 왜 모순인지 구체적으로 설명해주실수록 좋습니다</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form th:action="@{/news-tip/create}" method="post" th:object="${newsTipForm}">
+
+                <div class="field">
+                    <label class="label label-required">대상 정치인</label>
+                    <input class="input" th:classappend="${#fields.hasErrors('politicianName')} ? 'is-error'"
+                           type="text" th:field="*{politicianName}"
+                           placeholder="예: 홍길동" autocomplete="off">
+                    <div class="field-error" th:if="${#fields.hasErrors('politicianName')}">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <span th:errors="*{politicianName}"></span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label label-required">뉴스 기사 URL</label>
+                    <input class="input" th:classappend="${#fields.hasErrors('newsUrl')} ? 'is-error'"
+                           type="url" th:field="*{newsUrl}"
+                           placeholder="https://news.example.com/article/...">
+                    <p style="font-size:0.78rem;color:var(--slate-400);margin-top:4px;">
+                        <i class="bi bi-info-circle"></i>
+                        해당 발언이 담긴 뉴스 기사 주소를 붙여넣어 주세요.
+                    </p>
+                    <div class="field-error" th:if="${#fields.hasErrors('newsUrl')}">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <span th:errors="*{newsUrl}"></span>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-bottom:1.5rem;">
+                    <label class="label label-required">제보 내용</label>
+                    <textarea class="textarea" th:classappend="${#fields.hasErrors('description')} ? 'is-error'"
+                              th:field="*{description}" rows="9"
+                              placeholder="예시) 2022년 ○월 ○일 'A'라고 발언했지만, 2024년 ○월에는 'B'라고 말을 바꿨습니다.&#10;&#10;이전 발언 출처와 현재 발언 출처를 함께 적어주시면 검토가 빠릅니다."></textarea>
+                    <div class="field-error" th:if="${#fields.hasErrors('description')}">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <span th:errors="*{description}"></span>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;padding-top:1rem;border-top:1px solid var(--color-border);">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> 제보 제출
+                    </button>
+                    <a th:href="@{/news-tip/my}" class="btn btn-outline">내 제보 내역</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

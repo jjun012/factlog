@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>제보 상세 — 팩트로그</title>
+</head>
+<body>
+<main class="page-narrow">
+
+    <div class="page-header">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:0.5rem;">
+            <a th:href="@{/admin/news-tip}" class="btn btn-outline btn-sm">
+                <i class="bi bi-arrow-left"></i> 목록으로
+            </a>
+            <h1 class="page-title" style="margin:0;">제보 상세</h1>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+        <div class="card-body">
+
+            <!-- 상태 배지 -->
+            <div style="margin-bottom:1rem;">
+                <span th:if="${tip.status.name() == 'PENDING'}"
+                      style="font-size:0.8rem;font-weight:700;color:#f59e0b;background:#fffbeb;padding:4px 12px;border-radius:999px;">
+                    ⏳ 검토 대기
+                </span>
+                <span th:if="${tip.status.name() == 'REVIEWED'}"
+                      style="font-size:0.8rem;font-weight:700;color:#10b981;background:#ecfdf5;padding:4px 12px;border-radius:999px;">
+                    ✅ 검토 완료
+                </span>
+                <span th:if="${tip.status.name() == 'REJECTED'}"
+                      style="font-size:0.8rem;font-weight:700;color:#ef4444;background:#fef2f2;padding:4px 12px;border-radius:999px;">
+                    ❌ 거절됨
+                </span>
+            </div>
+
+            <!-- 정치인 / 제출자 / 날짜 -->
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:1rem;font-size:0.85rem;color:var(--slate-600);">
+                <span>
+                    <i class="bi bi-person-fill"></i>
+                    <strong>대상 정치인:</strong>
+                    <span th:text="${tip.politicianName}" style="font-weight:600;color:var(--slate-800);"></span>
+                </span>
+                <span>
+                    <i class="bi bi-person-circle"></i>
+                    <strong>제보자:</strong>
+                    <span th:text="${tip.submitter.nickname}"></span>
+                    (<span th:text="${tip.submitter.username}"></span>)
+                </span>
+                <span th:text="${#temporals.format(tip.createdAt, 'yyyy.MM.dd HH:mm')}"></span>
+            </div>
+
+            <!-- 뉴스 URL -->
+            <div class="field">
+                <label class="label">뉴스 URL</label>
+                <div style="background:#f8fafc;border:1px solid var(--color-border);border-radius:8px;padding:10px 14px;">
+                    <a th:href="${tip.newsUrl}" target="_blank"
+                       style="color:var(--color-primary);word-break:break-all;font-size:0.9rem;">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        <span th:text="${tip.newsUrl}"></span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 제보 내용 -->
+            <div class="field">
+                <label class="label">제보 내용</label>
+                <div style="background:#f8fafc;border:1px solid var(--color-border);border-radius:8px;padding:14px;line-height:1.7;white-space:pre-wrap;font-size:0.9rem;"
+                     th:text="${tip.description}"></div>
+            </div>
+
+            <!-- 관리자 메모 (기존 것이 있을 때) -->
+            <div th:if="${tip.adminNote != null and !tip.adminNote.isEmpty()}" class="field">
+                <label class="label">관리자 메모</label>
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;font-size:0.9rem;color:var(--slate-700);"
+                     th:text="${tip.adminNote}"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 분석으로 연결 안내 -->
+    <div th:if="${tip.status.name() == 'PENDING'}" class="card"
+         style="margin-bottom:1rem;border:1px solid #bfdbfe;background:#eff6ff;">
+        <div class="card-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div style="flex:1;">
+                <p style="margin:0;font-size:0.88rem;color:#1e40af;font-weight:600;">
+                    <i class="bi bi-robot"></i> AI 분석 연동
+                </p>
+                <p style="margin:4px 0 0;font-size:0.82rem;color:#3b82f6;">
+                    해당 정치인으로 AI 자동 분석을 실행하면 더 많은 발언 사례를 찾을 수 있습니다.
+                </p>
+            </div>
+            <a th:href="@{/admin/ai-draft}" class="btn btn-sm"
+               style="background:#3b82f6;color:#fff;border-color:#3b82f6;">
+                <i class="bi bi-robot"></i> AI 분석 페이지로
+            </a>
+        </div>
+    </div>
+
+    <!-- 처리 버튼 (PENDING 상태일 때만) -->
+    <div th:if="${tip.status.name() == 'PENDING'}">
+
+        <!-- 검토 완료 -->
+        <div class="card" style="margin-bottom:1rem;">
+            <div class="card-body">
+                <p style="font-weight:600;margin-bottom:0.75rem;color:var(--slate-700);">
+                    <i class="bi bi-check-circle" style="color:#10b981;"></i> 검토 완료 처리
+                </p>
+                <form th:action="@{/admin/news-tip/{id}/review(id=${tip.id})}" method="post">
+                    <div class="field" style="margin-bottom:0.75rem;">
+                        <textarea class="textarea" name="adminNote" rows="3"
+                                  placeholder="(선택) 관리자 메모 — 제보 내용을 확인했다는 메모를 남길 수 있습니다."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-check-circle"></i> 검토 완료
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 거절 -->
+        <div class="card">
+            <div class="card-body">
+                <p style="font-weight:600;margin-bottom:0.75rem;color:var(--slate-700);">
+                    <i class="bi bi-x-circle" style="color:#ef4444;"></i> 거절 처리
+                </p>
+                <form th:action="@{/admin/news-tip/{id}/reject(id=${tip.id})}" method="post"
+                      onsubmit="return confirm('이 제보를 거절하시겠습니까?')">
+                    <div class="field" style="margin-bottom:0.75rem;">
+                        <textarea class="textarea" name="adminNote" rows="3"
+                                  placeholder="(선택) 거절 사유를 메모해두세요."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-outline"
+                            style="color:#ef4444;border-color:#fca5a5;">
+                        <i class="bi bi-x-circle"></i> 거절
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

@@ -35,6 +35,14 @@
             <a class="nav-link hot" th:href="@{/post/hot}">
                 <i class="bi bi-fire"></i><span>핫게시판</span>
             </a>
+            <a sec:authorize="isAuthenticated() and !hasRole('ADMIN')" class="nav-link" th:href="@{/news-tip/create}"
+               style="color:#ca8a04;">
+                <i class="bi bi-newspaper"></i><span>뉴스 제보</span>
+            </a>
+            <a sec:authorize="hasRole('ADMIN')" class="nav-link" th:href="@{/admin/news-tip}"
+               style="color:#ca8a04;">
+                <i class="bi bi-newspaper"></i><span>제보 관리</span>
+            </a>
         </nav>
 
         <!-- 로그인 영역 -->

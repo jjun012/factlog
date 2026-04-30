@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>제보 관리 — 팩트로그</title>
+</head>
+<body>
+<main class="page">
+
+    <div class="page-header">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+            <h1 class="page-title">
+                <span class="title-icon" style="background:#fef9c3;color:#ca8a04;">📰</span>
+                사용자 뉴스 제보
+                <span th:if="${pendingCount > 0}"
+                      style="font-size:0.85rem;font-weight:700;color:#fff;background:#ef4444;padding:2px 10px;border-radius:999px;margin-left:6px;"
+                      th:text="${pendingCount} + '건 대기중'"></span>
+            </h1>
+            <a th:href="@{/admin/ai-draft}" class="btn btn-outline btn-sm">
+                <i class="bi bi-robot"></i> AI 분석으로
+            </a>
+        </div>
+    </div>
+
+    <!-- 알림 메시지 -->
+    <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom:1rem;">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <!-- 필터 탭 -->
+    <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <a th:href="@{/admin/news-tip(status=PENDING)}"
+           class="btn btn-sm" th:classappend="${currentStatus == 'PENDING'} ? 'btn-primary' : 'btn-outline'">
+            대기 중
+        </a>
+        <a th:href="@{/admin/news-tip(status=ALL)}"
+           class="btn btn-sm" th:classappend="${currentStatus == 'ALL'} ? 'btn-primary' : 'btn-outline'">
+            전체 보기
+        </a>
+    </div>
+
+    <!-- 제보 없을 때 -->
+    <div th:if="${tips.isEmpty()}" class="card">
+        <div class="empty">
+            <div class="empty-icon">📭</div>
+            <h4>접수된 제보가 없습니다</h4>
+            <p th:if="${currentStatus == 'PENDING'}">현재 검토 대기 중인 제보가 없습니다.</p>
+        </div>
+    </div>
+
+    <!-- 제보 목록 -->
+    <div th:each="tip : ${tips}" class="card" style="margin-bottom:1rem;">
+        <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
+                <div style="flex:1;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                        <span class="badge badge-politician">
+                            <i class="bi bi-person-fill"></i>
+                            <span th:text="${tip.politicianName}"></span>
+                        </span>
+                        <span th:if="${tip.status.name() == 'PENDING'}"
+                              style="font-size:0.75rem;font-weight:700;color:#f59e0b;background:#fffbeb;padding:2px 8px;border-radius:999px;">
+                            ⏳ 검토 대기
+                        </span>
+                        <span th:if="${tip.status.name() == 'REVIEWED'}"
+                              style="font-size:0.75rem;font-weight:700;color:#10b981;background:#ecfdf5;padding:2px 8px;border-radius:999px;">
+                            ✅ 검토 완료
+                        </span>
+                        <span th:if="${tip.status.name() == 'REJECTED'}"
+                              style="font-size:0.75rem;font-weight:700;color:#ef4444;background:#fef2f2;padding:2px 8px;border-radius:999px;">
+                            ❌ 거절됨
+                        </span>
+                    </div>
+
+                    <div style="font-size:0.9rem;color:var(--slate-700);margin-bottom:6px;line-height:1.5;"
+                         th:text="${#strings.abbreviate(tip.description, 120)}"></div>
+
+                    <div style="font-size:0.8rem;color:var(--slate-500);display:flex;gap:12px;flex-wrap:wrap;">
+                        <span>
+                            <i class="bi bi-person"></i>
+                            <span th:text="${tip.submitter.nickname}"></span>
+                        </span>
+                        <span th:text="${#temporals.format(tip.createdAt, 'yyyy.MM.dd HH:mm')}"></span>
+                        <a th:href="${tip.newsUrl}" target="_blank" style="color:var(--slate-500);">
+                            <i class="bi bi-box-arrow-up-right"></i> 원본 링크
+                        </a>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:8px;flex-shrink:0;">
+                    <a th:href="@{/admin/news-tip/{id}(id=${tip.id})}" class="btn btn-sm btn-outline">
+                        <i class="bi bi-eye"></i> 상세보기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
