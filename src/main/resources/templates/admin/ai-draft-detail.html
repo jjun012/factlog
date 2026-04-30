@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>AI 초안 검토 — 팩트로그</title>
+</head>
+<body>
+<main class="page-narrow">
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon" style="background:#f0f9ff;color:#0ea5e9;">🤖</span>
+            AI 초안 검토 및 수정
+        </h1>
+        <a th:href="@{/admin/ai-draft}" class="btn btn-outline btn-sm">
+            <i class="bi bi-arrow-left"></i> 목록으로
+        </a>
+    </div>
+
+    <!-- AI 추출 원본 기사 링크 -->
+    <div class="alert alert-warning" style="margin-bottom:1.5rem;">
+        <i class="bi bi-robot"></i>
+        <span>
+            AI가 자동 추출한 초안입니다. 내용을 반드시 원본 기사와 대조하여 검토 후 승인하세요.
+            <span th:if="${draft.newsUrl != null}">
+                — <a th:href="${draft.newsUrl}" target="_blank" style="font-weight:700;">
+                    원본 기사 보기 <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+            </span>
+        </span>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form th:action="@{/admin/ai-draft/{id}/approve(id=${draft.id})}"
+                  method="post" th:object="${flipFlopForm}">
+
+                <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;" class="field">
+                    <div>
+                        <label class="label label-required">정치인 이름</label>
+                        <input class="input" type="text" th:field="*{politicianName}" required>
+                    </div>
+                    <div>
+                        <label class="label label-required">제목</label>
+                        <input class="input" type="text" th:field="*{title}" required>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:0.5rem;">
+
+                    <!-- 이전 발언 -->
+                    <div style="background:var(--slate-50);border-radius:var(--r-lg);padding:1.25rem;">
+                        <div style="font-size:0.82rem;font-weight:800;color:var(--slate-600);
+                                    border-bottom:2px solid var(--slate-200);padding-bottom:8px;
+                                    margin-bottom:1rem;display:flex;align-items:center;gap:6px;">
+                            <i class="bi bi-clock-history"></i> 이전 발언
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">발언 날짜</label>
+                            <input class="input" type="datetime-local" th:field="*{beforeDate}" required>
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">발언 내용</label>
+                            <textarea class="textarea" th:field="*{beforeStatement}" rows="5" required></textarea>
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">뉴스 출처 URL</label>
+                            <input class="input" type="text" th:field="*{beforeSource}" required>
+                        </div>
+                    </div>
+
+                    <!-- 현재 발언 -->
+                    <div style="background:#fffdf0;border-radius:var(--r-lg);padding:1.25rem;">
+                        <div style="font-size:0.82rem;font-weight:800;color:var(--amber-500);
+                                    border-bottom:2px solid var(--amber-200);padding-bottom:8px;
+                                    margin-bottom:1rem;display:flex;align-items:center;gap:6px;">
+                            <i class="bi bi-mic-fill"></i> 현재 발언
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">발언 날짜</label>
+                            <input class="input" type="datetime-local" th:field="*{afterDate}" required>
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">발언 내용</label>
+                            <textarea class="textarea" th:field="*{afterStatement}" rows="5" required></textarea>
+                        </div>
+                        <div class="field">
+                            <label class="label label-required">뉴스 출처 URL</label>
+                            <input class="input" type="text" th:field="*{afterSource}" required>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="display:flex;gap:10px;margin-top:1.5rem;padding-top:1.25rem;
+                            border-top:1px solid var(--color-border);">
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('검토를 완료하고 팩트로그에 등록하시겠습니까?')">
+                        <i class="bi bi-check-circle"></i> 승인하고 등록
+                    </button>
+                    <form th:action="@{/admin/ai-draft/{id}/reject(id=${draft.id})}" method="post"
+                          style="display:inline;"
+                          onsubmit="return confirm('이 초안을 거절하시겠습니까?')">
+                        <button type="submit" class="btn btn-outline" style="color:#ef4444;border-color:#fca5a5;">
+                            <i class="bi bi-x-circle"></i> 거절
+                        </button>
+                    </form>
+                    <a th:href="@{/admin/ai-draft}" class="btn btn-outline">취소</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
