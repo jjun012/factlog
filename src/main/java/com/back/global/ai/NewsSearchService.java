@@ -39,10 +39,17 @@ public class NewsSearchService {
     public record NewsArticle(String title, String url, String description) {}
 
     public List<NewsArticle> searchRecentNews(String politicianName) {
-        String query = politicianName + " 발언";
+        return search(politicianName + " 발언", "date", 10);
+    }
+
+    public List<NewsArticle> searchPastNews(String politicianName) {
+        return search(politicianName + " 과거 발언 입장", "sim", 10);
+    }
+
+    private List<NewsArticle> search(String query, String sort, int display) {
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
         String apiUrl = "https://openapi.naver.com/v1/search/news.json?query=" + encodedQuery
-                + "&display=5&sort=date";
+                + "&display=" + display + "&sort=" + sort;
 
         List<NewsArticle> articles = new ArrayList<>();
         try {
@@ -62,12 +69,12 @@ public class NewsSearchService {
                 String title = stripHtml((String) item.getOrDefault("title", ""));
                 String link = (String) item.getOrDefault("link", "");
                 String description = stripHtml((String) item.getOrDefault("description", ""));
-                if (!link.isBlank() && !title.isBlank()) {
+                if (!link.isBlank() && !title.isBlank() && isNewsLink(link)) {
                     articles.add(new NewsArticle(title, link, description));
                 }
             }
         } catch (Exception e) {
-            log.warn("네이버 뉴스 검색 실패 - 검색어: {}, 오류: {}", politicianName, e.getMessage());
+            log.warn("네이버 뉴스 검색 실패 - 검색어: {}, 오류: {}", query, e.getMessage());
         }
         return articles;
     }
@@ -100,6 +107,22 @@ public class NewsSearchService {
             log.warn("기사 본문 스크래핑 실패 - URL: {}, 오류: {}", url, e.getMessage());
             return "";
         }
+    }
+
+    private boolean isNewsLink(String link) {
+        // 네이버 제휴 광고성 콘텐츠 제외
+        if (link.contains("utm_source=naver") && link.contains("utm_medium=partnership")) {
+            return false;
+        }
+        // 뉴스와 무관한 도메인 제외 (패션, 쇼핑, 블로그 등)
+        String[] nonNewsDomains = {"allurekorea.com", "blog.naver.com", "post.naver.com",
+                "smartstore.naver.com", "shopping.naver.com"};
+        for (String domain : nonNewsDomains) {
+            if (link.contains(domain)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private String stripHtml(String html) {

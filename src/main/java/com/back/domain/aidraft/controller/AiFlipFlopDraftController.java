@@ -35,15 +35,20 @@ public class AiFlipFlopDraftController {
         }
         model.addAttribute("currentStatus", status);
         model.addAttribute("politicians", NewsSearchService.MAJOR_POLITICIANS);
+        model.addAttribute("isScanning", draftService.isScanning());
         return "admin/ai-draft-list";
     }
 
     // 전체 자동 분석 (주요 정치인 전부)
     @PostMapping("/scan-all")
     public String scanAll(RedirectAttributes redirectAttributes) {
-        int analyzed = draftService.generateAllDrafts();
+        if (draftService.isScanning()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "이미 AI 분석이 진행 중입니다. 잠시 후 확인해 주세요.");
+            return "redirect:/admin/ai-draft";
+        }
+        draftService.generateAllDrafts();
         redirectAttributes.addFlashAttribute("successMessage",
-                "주요 정치인 " + NewsSearchService.MAJOR_POLITICIANS.size() + "명의 최근 뉴스 " + analyzed + "건을 분석했습니다.");
+                "주요 정치인 " + NewsSearchService.MAJOR_POLITICIANS.size() + "명에 대한 AI 분석을 백그라운드에서 시작했습니다.");
         return "redirect:/admin/ai-draft";
     }
 
@@ -55,9 +60,13 @@ public class AiFlipFlopDraftController {
             redirectAttributes.addFlashAttribute("errorMessage", "정치인 이름을 입력하세요.");
             return "redirect:/admin/ai-draft";
         }
-        int analyzed = draftService.generateDraftsForPolitician(politicianName.trim());
+        if (draftService.isScanning()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "이미 AI 분석이 진행 중입니다. 잠시 후 확인해 주세요.");
+            return "redirect:/admin/ai-draft";
+        }
+        draftService.generateDraftsForPolitician(politicianName.trim());
         redirectAttributes.addFlashAttribute("successMessage",
-                "'" + politicianName + "' 관련 뉴스 " + analyzed + "건을 분석했습니다.");
+                "'" + politicianName + "' AI 분석을 백그라운드에서 시작했습니다. 잠시 후 새로고침해 주세요.");
         return "redirect:/admin/ai-draft";
     }
 
