@@ -35,11 +35,23 @@
             <a class="nav-link hot" th:href="@{/post/hot}">
                 <i class="bi bi-fire"></i><span>핫게시판</span>
             </a>
+            <a sec:authorize="isAuthenticated() and !hasRole('ADMIN')" class="nav-link" th:href="@{/news-tip/create}"
+               style="color:#ca8a04;">
+                <i class="bi bi-newspaper"></i><span>뉴스 제보</span>
+            </a>
+            <a sec:authorize="hasRole('ADMIN')" class="nav-link" th:href="@{/admin/news-tip}"
+               style="color:#ca8a04;">
+                <i class="bi bi-newspaper"></i><span>제보 관리</span>
+            </a>
         </nav>
 
         <!-- 로그인 영역 -->
         <div class="nav-auth">
             <div sec:authorize="isAuthenticated()" style="display:flex;align-items:center;gap:8px;">
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/ai-draft}"
+                   class="btn btn-sm" style="background:#0ea5e9;color:#fff;border-color:#0ea5e9;">
+                    <i class="bi bi-robot"></i> AI 분석
+                </a>
                 <a th:href="@{/post/create}" class="btn btn-primary btn-sm">
                     <i class="bi bi-pencil-square"></i> 글쓰기
                 </a>

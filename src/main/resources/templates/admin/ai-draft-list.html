@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: base(~{::title}, ~{::main})}">
+<head>
+    <title>AI 초안 관리 — 팩트로그</title>
+</head>
+<body>
+<main class="page">
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon" style="background:#f0f9ff;color:#0ea5e9;">🤖</span>
+            AI 뉴스 자동 분석
+        </h1>
+    </div>
+
+    <!-- 전체 자동 분석 -->
+    <div class="card" style="margin-bottom:1rem;">
+        <div class="card-body">
+            <p style="font-size:0.9rem;color:var(--slate-600);margin-bottom:0.75rem;">
+                주요 정치인의 최근 뉴스를 AI가 자동으로 분석해 말 바꾸기 사례를 찾습니다.
+            </p>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:0.75rem;">
+                <span style="font-size:0.8rem;color:var(--slate-500);">분석 대상:</span>
+                <span th:each="p : ${politicians}"
+                      style="font-size:0.78rem;background:#f1f5f9;padding:2px 8px;border-radius:999px;color:var(--slate-700);"
+                      th:text="${p}"></span>
+            </div>
+            <form th:action="@{/admin/ai-draft/scan-all}" method="post">
+                <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('주요 정치인 전체 뉴스를 분석합니다. 시간이 걸릴 수 있습니다.')">
+                    <i class="bi bi-robot"></i> 전체 뉴스 자동 분석
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 특정 정치인 검색 -->
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-body">
+            <p style="font-size:0.85rem;color:var(--slate-500);margin-bottom:0.75rem;">특정 정치인만 분석하려면:</p>
+            <form th:action="@{/admin/ai-draft/search}" method="post"
+                  style="display:flex;gap:10px;align-items:center;">
+                <input class="input" type="text" name="politicianName"
+                       placeholder="예: 홍길동" style="max-width:200px;" required>
+                <button type="submit" class="btn btn-outline">
+                    <i class="bi bi-search"></i> 분석
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 알림 메시지 -->
+    <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom:1rem;">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger" style="margin-bottom:1rem;">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- 필터 탭 -->
+    <div style="display:flex;gap:8px;margin-bottom:1rem;">
+        <a th:href="@{/admin/ai-draft(status=PENDING)}"
+           class="btn btn-sm" th:classappend="${currentStatus == 'PENDING'} ? 'btn-danger' : 'btn-outline'">
+            대기 중
+        </a>
+        <a th:href="@{/admin/ai-draft(status=ALL)}"
+           class="btn btn-sm" th:classappend="${currentStatus == 'ALL'} ? 'btn-danger' : 'btn-outline'">
+            전체 보기
+        </a>
+    </div>
+
+    <!-- 초안 목록 -->
+    <div th:if="${drafts.isEmpty()}" class="card">
+        <div class="empty">
+            <div class="empty-icon">🤖</div>
+            <h4>분석된 초안이 없습니다</h4>
+            <p>위에서 전체 뉴스 자동 분석을 실행해보세요.</p>
+        </div>
+    </div>
+
+    <div th:each="draft : ${drafts}" class="card" style="margin-bottom:1rem;">
+        <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
+                <div style="flex:1;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                        <span class="badge badge-politician">
+                            <i class="bi bi-person-fill"></i>
+                            <span th:text="${draft.politicianName}"></span>
+                        </span>
+                        <span th:if="${draft.status.name() == 'PENDING'}"
+                              style="font-size:0.75rem;font-weight:700;color:#f59e0b;background:#fffbeb;padding:2px 8px;border-radius:999px;">
+                            ⏳ 검토 대기
+                        </span>
+                        <span th:if="${draft.status.name() == 'APPROVED'}"
+                              style="font-size:0.75rem;font-weight:700;color:#10b981;background:#ecfdf5;padding:2px 8px;border-radius:999px;">
+                            ✅ 승인됨
+                        </span>
+                        <span th:if="${draft.status.name() == 'REJECTED'}"
+                              style="font-size:0.75rem;font-weight:700;color:#ef4444;background:#fef2f2;padding:2px 8px;border-radius:999px;">
+                            ❌ 거절됨
+                        </span>
+                    </div>
+                    <div style="font-weight:700;font-size:1rem;margin-bottom:4px;"
+                         th:text="${draft.title}"></div>
+                    <div style="font-size:0.82rem;color:var(--slate-500);">
+                        <span th:text="${#temporals.format(draft.createdAt, 'yyyy.MM.dd HH:mm')}"></span>
+                        <span style="margin:0 6px;">·</span>
+                        <a th:if="${draft.newsUrl != null}" th:href="${draft.newsUrl}"
+                           target="_blank" style="color:var(--slate-500);">
+                            <i class="bi bi-box-arrow-up-right"></i> 원본 기사
+                        </a>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-shrink:0;" th:if="${draft.status.name() == 'PENDING'}">
+                    <a th:href="@{/admin/ai-draft/{id}(id=${draft.id})}" class="btn btn-sm btn-outline">
+                        <i class="bi bi-pencil"></i> 검토·수정
+                    </a>
+                    <form th:action="@{/admin/ai-draft/{id}/reject(id=${draft.id})}" method="post"
+                          onsubmit="return confirm('거절하시겠습니까?')">
+                        <button type="submit" class="btn btn-sm btn-outline"
+                                style="color:#ef4444;border-color:#fca5a5;">
+                            <i class="bi bi-x-circle"></i> 거절
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>
